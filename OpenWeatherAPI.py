@@ -1119,6 +1119,13 @@ def _select_daily_forecast(forecast: Sequence[Any]) -> list[Mapping[str, Any]]:
     return [selected[day] for day in sorted(selected)]
 
 
+def select_daily_forecast(
+    forecast: Sequence[Any],
+) -> list[Mapping[str, Any]]:
+    """Публичная обёртка выбора одного дневного периода прогноза."""
+    return _select_daily_forecast(forecast)
+
+
 def _format_aqi(index: Any, label: Any) -> str:
     index_text = _format_value(index)
     label_text = _format_value(label)
