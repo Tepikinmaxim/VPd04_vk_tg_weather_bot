@@ -72,6 +72,18 @@ class StateManagerTests(unittest.IsolatedAsyncioTestCase):
             BotState.WAITING_EXTENDED.value,
             "awaiting_extended_city",
         )
+        self.assertEqual(
+            BotState.WAITING_CHANGE_CITY.value,
+            "awaiting_new_city",
+        )
+        self.assertEqual(
+            BotState.WAITING_COMPARE_CITY_1.value,
+            "awaiting_compare_city_1",
+        )
+        self.assertEqual(
+            BotState.WAITING_COMPARE_CITY_2.value,
+            "awaiting_compare_city_2",
+        )
 
 
 if __name__ == "__main__":

@@ -2,17 +2,16 @@ import json
 import unittest
 
 from weather_vk_bot.keyboards import (
-    BTN_BACK,
+    BTN_CHANGE_CITY,
+    BTN_COMPARE,
     BTN_EXTENDED,
     BTN_FORECAST,
     BTN_GEO,
     BTN_HELP,
-    BTN_HOME,
     BTN_MANUAL_COORDS,
     BTN_WEATHER,
     geo_keyboard,
     main_menu_keyboard,
-    navigation_keyboard,
 )
 
 
@@ -41,8 +40,10 @@ class KeyboardTests(unittest.TestCase):
             [
                 BTN_WEATHER,
                 BTN_FORECAST,
-                BTN_GEO,
+                BTN_COMPARE,
                 BTN_EXTENDED,
+                BTN_GEO,
+                BTN_CHANGE_CITY,
                 BTN_HELP,
             ],
         )
@@ -59,7 +60,10 @@ class KeyboardTests(unittest.TestCase):
 
         self.assertEqual(buttons[0]["color"], "primary")
         self.assertEqual(buttons[1]["color"], "positive")
-        self.assertEqual(buttons[2]["color"], "secondary")
+        self.assertEqual(buttons[2]["color"], "primary")
+        self.assertEqual(buttons[3]["color"], "secondary")
+        self.assertEqual(buttons[4]["color"], "secondary")
+        self.assertEqual(buttons[5]["color"], "secondary")
 
     def test_geo_keyboard_has_native_location(self) -> None:
         data = load_keyboard(geo_keyboard())
@@ -70,25 +74,22 @@ class KeyboardTests(unittest.TestCase):
         ]
 
         self.assertIn("location", actions)
-        self.assertIn(BTN_MANUAL_COORDS, button_labels(geo_keyboard()))
-        self.assertIn(BTN_BACK, button_labels(geo_keyboard()))
-        self.assertIn(BTN_HOME, button_labels(geo_keyboard()))
+        self.assertEqual(
+            button_labels(geo_keyboard()),
+            [BTN_MANUAL_COORDS],
+        )
 
-    def test_navigation_keyboard(self) -> None:
-        self.assertEqual(
-            button_labels(navigation_keyboard()),
-            [BTN_BACK, BTN_HOME],
+    def test_keyboards_have_no_navigation_buttons(self) -> None:
+        labels = button_labels(main_menu_keyboard()) + button_labels(
+            geo_keyboard()
         )
-        self.assertEqual(
-            button_labels(navigation_keyboard(back=False, home=False)),
-            [],
-        )
+        self.assertNotIn("⬅️ Назад", labels)
+        self.assertNotIn("🏠 Главное меню", labels)
 
     def test_all_keyboards_are_not_inline(self) -> None:
         for raw in (
             main_menu_keyboard(),
             geo_keyboard(),
-            navigation_keyboard(),
         ):
             data = load_keyboard(raw)
             self.assertFalse(data["one_time"])

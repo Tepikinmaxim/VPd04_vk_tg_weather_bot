@@ -4,8 +4,8 @@ from __future__ import annotations
 
 from vkbottle.bot import Bot, Message
 
-from weather_vk_bot.keyboards import navigation_keyboard
-from weather_vk_bot.services.formatter import format_forecast
+from weather_vk_bot.keyboards import main_menu_keyboard
+from weather_vk_bot.services.formatter import format_forecast, weather_city
 from weather_vk_bot.services.state_manager import BotState
 
 from .common import (
@@ -16,6 +16,33 @@ from .common import (
     reply_weather_error,
     send_text,
 )
+
+
+async def show_forecast(
+    message: Message,
+    deps: HandlerDeps,
+    city: str,
+) -> bool:
+    """Показывает прогноз и сохраняет город при успехе."""
+    normalized = city.strip()
+    if not normalized:
+        return False
+
+    try:
+        result = await deps.service.get_forecast(normalized)
+    except Exception as exc:
+        await reply_weather_error(message, exc)
+        return False
+
+    deps.states.remember(
+        message.peer_id,
+        city=weather_city(result) or normalized,
+        mode="forecast",
+    )
+    text = format_forecast(result)
+    await send_text(message, text, main_menu_keyboard())
+    await deps.states.reset(message.peer_id)
+    return True
 
 
 def register(bot: Bot, deps: HandlerDeps) -> None:
@@ -31,17 +58,4 @@ def register(bot: Bot, deps: HandlerDeps) -> None:
             )
             return
 
-        try:
-            result = await deps.service.get_forecast(city)
-        except Exception as exc:
-            await reply_weather_error(message, exc)
-            return
-
-        deps.states.remember(
-            message.peer_id,
-            city=city,
-            mode="forecast",
-        )
-        text = format_forecast(result)
-        await send_text(message, text, navigation_keyboard())
-        await deps.states.reset(message.peer_id)
+        await show_forecast(message, deps, city)

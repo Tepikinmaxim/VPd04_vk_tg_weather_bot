@@ -11,9 +11,9 @@ from vkbottle.bot import Bot, Message
 from weather_vk_bot.keyboards import (
     BTN_MANUAL_COORDS,
     geo_keyboard,
-    navigation_keyboard,
+    main_menu_keyboard,
 )
-from weather_vk_bot.services.formatter import format_current
+from weather_vk_bot.services.formatter import format_current, weather_city
 from weather_vk_bot.services.state_manager import BotState
 
 from .common import (
@@ -87,7 +87,50 @@ def extract_geo_coordinates(message: Message) -> tuple[float, float] | None:
         return None
 
 
+def _is_coordinate_text(message: Any) -> bool:
+    """Проверяет, похоже ли сообщение на пару координат."""
+    text = str(getattr(message, "text", "") or "").strip()
+    if not text:
+        return False
+    try:
+        _parse_coordinates(text)
+    except ValueError:
+        return False
+    return True
+
+
+async def show_weather_by_coordinates(
+    message: Message,
+    deps: HandlerDeps,
+    coordinates: tuple[float, float],
+) -> None:
+    """Запрашивает погоду по координатам и возвращает меню."""
+    try:
+        result = await deps.service.get_by_coordinates(*coordinates)
+    except Exception as exc:
+        await reply_weather_error(
+            message,
+            exc,
+            keyboard=geo_keyboard(),
+        )
+        return
+
+    deps.states.remember(
+        message.peer_id,
+        city=weather_city(result),
+        mode="geo",
+    )
+    text = format_current(result)
+    await send_text(message, text, main_menu_keyboard())
+    await deps.states.reset(message.peer_id)
+
+
 def register(bot: Bot, deps: HandlerDeps) -> None:
+    @bot.on.message(func=_is_coordinate_text)
+    async def coordinates_anywhere(message: Message) -> None:
+        coordinates = _parse_coordinates(message_text(message))
+        await show_weather_by_coordinates(message, deps, coordinates)
+
     @bot.on.message(state=BotState.WAITING_GEO)
     async def weather_by_geo(message: Message) -> None:
         coordinates = extract_geo_coordinates(message)
@@ -109,20 +152,4 @@ def register(bot: Bot, deps: HandlerDeps) -> None:
                 )
                 return
 
-        try:
-            result = await deps.service.get_by_coordinates(*coordinates)
-        except Exception as exc:
-            await reply_weather_error(
-                message,
-                exc,
-                keyboard=geo_keyboard(),
-            )
-            return
-
-        deps.states.remember(
-            message.peer_id,
-            mode="geo",
-        )
-        text = format_current(result)
-        await send_text(message, text, navigation_keyboard())
-        await deps.states.reset(message.peer_id)
+        await show_weather_by_coordinates(message, deps, coordinates)

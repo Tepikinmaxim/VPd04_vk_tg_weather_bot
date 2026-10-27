@@ -16,6 +16,9 @@ class BotState(BaseStateGroup):
     WAITING_FORECAST_CITY = "awaiting_city_forecast"
     WAITING_GEO = "waiting_geo"
     WAITING_EXTENDED = "awaiting_extended_city"
+    WAITING_CHANGE_CITY = "awaiting_new_city"
+    WAITING_COMPARE_CITY_1 = "awaiting_compare_city_1"
+    WAITING_COMPARE_CITY_2 = "awaiting_compare_city_2"
 
 
 @dataclass(slots=True)

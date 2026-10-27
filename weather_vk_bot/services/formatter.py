@@ -70,6 +70,37 @@ def _percent(value: Any) -> str:
     return f"{number:g}%"
 
 
+def _difference(first: Any, second: Any) -> float | None:
+    first_number = _number(first)
+    second_number = _number(second)
+    if first_number is None or second_number is None:
+        return None
+    return second_number - first_number
+
+
+def _amount(value: float, unit: str) -> str:
+    text = f"{abs(value):.1f}".rstrip("0").rstrip(".")
+    return f"{text}{unit}"
+
+
+def _summary_line(
+    icon: str,
+    label: str,
+    first_city: str,
+    second_city: str,
+    difference: float | None,
+    unit: str,
+    *,
+    higher: str,
+) -> str:
+    if difference is None:
+        return f"{icon} {label}: нет данных"
+    if abs(difference) < 0.05:
+        return f"{icon} {label}: одинаково"
+    city = second_city if difference > 0 else first_city
+    return f"{icon} {city} {higher} на {_amount(difference, unit)}"
+
+
 def _time_msk(value: Any) -> str:
     if not isinstance(value, str) or not value.strip():
         return "—"
@@ -98,14 +129,28 @@ def _forecast_date(value: Any) -> str:
     return f"{msk_moment:%d.%m.%Y}, {WEEKDAYS[msk_moment.weekday()]}"
 
 
+def weather_city(result: Mapping[str, Any]) -> str | None:
+    """Возвращает нормализованное название города из результата."""
+    name = _mapping(result.get("location")).get("name")
+    if not isinstance(name, str):
+        return None
+    normalized = name.strip()
+    return normalized or None
+
+
 def _city(result: Mapping[str, Any]) -> str:
-    return _text(_mapping(result.get("location")).get("name"), "неизвестно")
+    return weather_city(result) or "неизвестно"
+
+
+def _actual_on() -> str:
+    return f"🕒 Актуально на {datetime.now():%d.%m.%Y, %H:%M}"
 
 
 def _weather_block(result: Mapping[str, Any]) -> list[str]:
     weather = _mapping(result.get("weather"))
     lines = [
         f"🌍 Город: {_city(result)}",
+        _actual_on(),
         f"📝 Описание: {_text(weather.get('description'))}",
         f"🌡 Температура: {_temperature(weather.get('temperature_c'))}",
         f"🤔 Ощущается как: {_temperature(weather.get('feels_like_c'))}",
@@ -181,13 +226,127 @@ def format_current(
     return "\n".join(lines).strip()
 
 
+def _comparison_block(result: Mapping[str, Any]) -> list[str]:
+    weather = _mapping(result.get("weather"))
+    return [
+        f"🌍 {_city(result)}",
+        f"📝 {_text(weather.get('description'))}",
+        f"🌡 Температура: {_temperature(weather.get('temperature_c'))}",
+        f"🤔 Ощущается как: {_temperature(weather.get('feels_like_c'))}",
+        f"💧 Влажность: {_percent(weather.get('humidity_percent'))}",
+        f"💨 Ветер: {_unit(weather.get('wind_speed_ms'), 'м/с')}",
+        f"☁️ Облачность: {_percent(weather.get('clouds_percent'))}",
+    ]
+
+
+def format_comparison(
+    first: Mapping[str, Any],
+    second: Mapping[str, Any],
+) -> str:
+    """Сравнивает текущую погоду в двух городах."""
+    first_weather = _mapping(first.get("weather"))
+    second_weather = _mapping(second.get("weather"))
+    first_city = _city(first)
+    second_city = _city(second)
+
+    first_temperature = _number(first_weather.get("temperature_c"))
+    second_temperature = _number(second_weather.get("temperature_c"))
+    if (
+        first_temperature is not None
+        and second_temperature is not None
+        and second_temperature - first_temperature >= 0.05
+    ):
+        warmer, cooler = second, first
+    else:
+        warmer, cooler = first, second
+
+    lines = ["📊 Сравнение погоды", SEPARATOR, _actual_on()]
+    lines.extend(_comparison_block(warmer))
+    lines.append(SEPARATOR)
+    lines.extend(_comparison_block(cooler))
+    lines.append(SEPARATOR)
+    lines.append("📊 Итог сравнения")
+
+    lines.append(
+        _summary_line(
+            "🌡",
+            "Температура",
+            first_city,
+            second_city,
+            _difference(
+                first_weather.get("temperature_c"),
+                second_weather.get("temperature_c"),
+            ),
+            "°C",
+            higher="теплее",
+        )
+    )
+    lines.append(
+        _summary_line(
+            "🤔",
+            "Ощущается как",
+            first_city,
+            second_city,
+            _difference(
+                first_weather.get("feels_like_c"),
+                second_weather.get("feels_like_c"),
+            ),
+            "°C",
+            higher="ощущается теплее",
+        )
+    )
+    lines.append(
+        _summary_line(
+            "💧",
+            "Влажность",
+            first_city,
+            second_city,
+            _difference(
+                first_weather.get("humidity_percent"),
+                second_weather.get("humidity_percent"),
+            ),
+            " п.п.",
+            higher="влажнее",
+        )
+    )
+    lines.append(
+        _summary_line(
+            "💨",
+            "Ветер",
+            first_city,
+            second_city,
+            _difference(
+                first_weather.get("wind_speed_ms"),
+                second_weather.get("wind_speed_ms"),
+            ),
+            " м/с",
+            higher="ветренее",
+        )
+    )
+    lines.append(
+        _summary_line(
+            "☁️",
+            "Облачность",
+            first_city,
+            second_city,
+            _difference(
+                first_weather.get("clouds_percent"),
+                second_weather.get("clouds_percent"),
+            ),
+            " п.п.",
+            higher="облачнее",
+        )
+    )
+    return "\n".join(lines).strip()
+
+
 def format_forecast(result: Mapping[str, Any]) -> str:
     """Форматирует пятидневный прогноз по одному блоку на день."""
     lines = [
         "📅 Прогноз на 5 дней",
         SEPARATOR,
         f"🌍 Город: {_city(result)}",
-        "🕛 Время среза: 12:00 MSK (UTC+3)",
+        "🕛 Прогноз на 12:00 MSK (UTC+3)",
     ]
 
     raw_forecast = result.get("forecast")

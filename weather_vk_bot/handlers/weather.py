@@ -4,8 +4,8 @@ from __future__ import annotations
 
 from vkbottle.bot import Bot, Message
 
-from weather_vk_bot.keyboards import navigation_keyboard
-from weather_vk_bot.services.formatter import format_current
+from weather_vk_bot.keyboards import main_menu_keyboard
+from weather_vk_bot.services.formatter import format_current, weather_city
 from weather_vk_bot.services.state_manager import BotState
 
 from .common import (
@@ -17,6 +17,35 @@ from .common import (
     reply_weather_error,
     send_text,
 )
+
+
+async def show_current_weather(
+    message: Message,
+    deps: HandlerDeps,
+    city: str,
+    *,
+    extended: bool = False,
+) -> bool:
+    """Показывает текущую погоду и сохраняет город при успехе."""
+    normalized = city.strip()
+    if not normalized:
+        return False
+
+    try:
+        result = await deps.service.get_current(normalized, extended=extended)
+    except Exception as exc:
+        await reply_weather_error(message, exc)
+        return False
+
+    deps.states.remember(
+        message.peer_id,
+        city=weather_city(result) or normalized,
+        mode="extended" if extended else "current",
+    )
+    text = format_current(result, extended=extended)
+    await send_text(message, text, main_menu_keyboard())
+    await deps.states.reset(message.peer_id)
+    return True
 
 
 async def _handle_city(
@@ -35,20 +64,7 @@ async def _handle_city(
         )
         return
 
-    try:
-        result = await deps.service.get_current(city, extended=extended)
-    except Exception as exc:
-        await reply_weather_error(message, exc)
-        return
-
-    deps.states.remember(
-        message.peer_id,
-        city=city,
-        mode="extended" if extended else "current",
-    )
-    text = format_current(result, extended=extended)
-    await send_text(message, text, navigation_keyboard())
-    await deps.states.reset(message.peer_id)
+    await show_current_weather(message, deps, city, extended=extended)
 
 
 def register(bot: Bot, deps: HandlerDeps) -> None:
