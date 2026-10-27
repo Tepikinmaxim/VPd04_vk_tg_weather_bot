@@ -1,4 +1,4 @@
-# План проекта VPd04_vk_weather
+# План проекта VPd04_vk_tg_weather_bot
 
 ## Цель
 
@@ -22,6 +22,8 @@
   «Геолокация» без нажатия кнопки.
 - [проверено] Telegram-бот на aiogram с общим ядром `weather_core` и тем же
   функционалом. Бот запущен, `--check` пройден.
+- [проверено] Переименование локального проекта и GitHub-репозитория в
+  `VPd04_vk_tg_weather_bot`.
 
 ## Дополнение 27.10.2026: правило очереди правок
 
@@ -61,7 +63,7 @@
 
 **Статус:** выполнено 25.10.2026.
 
-- Строка `source .../VPd04_vk_weather/.venv/bin/activate` активирует виртуальное
+- Строка `source .../VPd04_vk_tg_weather_bot/.venv/bin/activate` активирует виртуальное
   окружение проекта.
 - `/var/folders/.../opencode/VPd03_weather_launcher.command ; exit;` — временный
   launcher прошлой сессии `VPd03_weather`, созданный для запуска GUI погодного
@@ -69,7 +71,7 @@
   окно после завершения.
 - Команды попали в буфер ввода терминала (typeahead) и выполнились после выхода
   из opencode. Сам opencode команды в родительский терминал не вставляет.
-- Временный файл launcher уже удален; для `VPd04_vk_weather` он не используется.
+- Временный файл launcher уже удален; для `VPd04_vk_tg_weather_bot` он не используется.
 
 ## Текущая задача: CLI-запуск OpenWeatherAPI.py
 
@@ -1442,3 +1444,27 @@ OpenWeatherMap предоставил его в `local_names.ru`, вместо �
 - `.venv/bin/python main.py --check`
 - после доступа к Telegram: `/start`, погода, прогноз, расширенный режим,
   сравнение, гео, смена города, помощь.
+
+## Задача: переименование проекта в VPd04_vk_tg_weather_bot
+
+**Статус:** выполнено 27.10.2026.
+
+### Что изменено
+
+- Локальная папка переименована:
+  `VPd04_vk_weather` → `VPd04_vk_tg_weather_bot`.
+- GitHub-репозиторий переименован в `Tepikinmaxim/VPd04_vk_tg_weather_bot`;
+  local remote обновлён.
+- Обновлены заголовок README, путь установки, структура проекта, заголовок
+  `plan.md` и строка проекта в `TG_plan.md`.
+- Удалён устаревший неотслеживаемый дубль `weather_tg_bot/TG_plan.md`.
+- `.venv` пересоздан в новой папке, чтобы shebang и `pyvenv.cfg` не ссылались
+  на старый путь.
+- Боты перезапущены из нового каталога; проверены тесты и GitHub.
+
+### Проверки
+
+- `.venv/bin/python -m unittest discover -s tests -v`
+- `git diff --check`
+- `gh repo view Tepikinmaxim/VPd04_vk_tg_weather_bot`
+- проверка PID и логов VK/Telegram после перезапуска.

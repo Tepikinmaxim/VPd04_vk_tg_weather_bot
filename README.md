@@ -1,4 +1,4 @@
-# VPd04_vk_weather
+# VPd04_vk_tg_weather_bot
 
 ## Назначение
 
@@ -99,7 +99,7 @@ legacy. Он продолжает работать, но новый функци
 ## Установка
 
 ```sh
-cd ~/Documents/ZeroCoding/VPd04_vk_weather
+cd ~/Documents/ZeroCoding/VPd04_vk_tg_weather_bot
 python3 -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
@@ -545,7 +545,7 @@ API, события `message_new`, `message_allow`, напоминание вр�
 ## Структура проекта
 
 ```text
-VPd04_vk_weather/
+VPd04_vk_tg_weather_bot/
 ├── main.py                  # точка входа VK-бота
 ├── telegram_main.py         # точка входа Telegram-бота
 ├── weather_core/            # общий слой VK и Telegram
