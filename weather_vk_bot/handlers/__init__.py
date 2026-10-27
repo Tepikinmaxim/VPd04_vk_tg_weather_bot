@@ -10,10 +10,11 @@ from .common import HandlerDeps
 
 def register_handlers(bot: Bot, deps: HandlerDeps) -> None:
     onboarding.register(bot, deps)
-    geo.register(bot, deps)
+    geo.register_global(bot, deps)
     menu.register(bot, deps)
     help_handler.register(bot, deps)
     weather.register(bot, deps)
     forecast.register(bot, deps)
     comparison.register(bot, deps)
+    geo.register_state(bot, deps)
     menu.register_fallback(bot, deps)

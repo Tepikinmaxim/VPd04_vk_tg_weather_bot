@@ -3,93 +3,26 @@
 from __future__ import annotations
 
 import asyncio
-import re
-from collections.abc import Mapping
-from typing import Any
 
 from vkbottle.bot import Bot, Message
 
+from weather_core.comparison import (
+    city_key as _city_key,
+    same_location as _same_location,
+    second_city_prompt as _second_city_prompt,
+)
+from weather_core.services.formatter import format_comparison, weather_city
 from weather_vk_bot.keyboards import BTN_COMPARE, main_menu_keyboard
-from weather_vk_bot.services.formatter import format_comparison, weather_city
 from weather_vk_bot.services.state_manager import BotState
 
 from .common import (
     COMPARE_CITY_1_PROMPT,
-    COMPARE_CITY_2_PROMPT,
     HandlerDeps,
     message_text,
     prompt_for_city,
     reply_weather_error,
     send_text,
 )
-
-
-_COMPARE_CITY_EXAMPLES = ("Москва", "Санкт-Петербург", "Сочи", "Казань")
-
-
-def _city_key(value: str) -> str:
-    normalized = value.casefold().replace("ё", "е")
-    normalized = re.sub(r"[^\w\s]", " ", normalized)
-    normalized = " ".join(normalized.split())
-    for prefix in ("городской округ ", "город ", "г "):
-        if normalized.startswith(prefix):
-            return normalized[len(prefix) :]
-    return normalized
-
-
-def _comparison_example(first_city: str) -> str | None:
-    if not re.search(r"[а-яё]", first_city.casefold()):
-        return None
-    first_key = _city_key(first_city)
-    for city in _COMPARE_CITY_EXAMPLES:
-        if _city_key(city) != first_key:
-            return city
-    return None
-
-
-def _coordinates(result: Mapping[str, Any]) -> tuple[float, float] | None:
-    location = result.get("location")
-    if not isinstance(location, Mapping):
-        return None
-    lat = location.get("lat")
-    lon = location.get("lon")
-    if isinstance(lat, bool) or isinstance(lon, bool):
-        return None
-    if not isinstance(lat, (int, float)) or not isinstance(lon, (int, float)):
-        return None
-    return (round(float(lat), 6), round(float(lon), 6))
-
-
-def _same_location(
-    first: Mapping[str, Any],
-    second: Mapping[str, Any],
-) -> bool:
-    first_name = weather_city(first)
-    second_name = weather_city(second)
-    if (
-        first_name
-        and second_name
-        and _city_key(first_name) == _city_key(second_name)
-    ):
-        return True
-
-    first_coordinates = _coordinates(first)
-    return (
-        first_coordinates is not None
-        and first_coordinates == _coordinates(second)
-    )
-
-
-def _second_city_prompt(first_city: str, *, duplicate: bool = False) -> str:
-    lines: list[str] = []
-    if duplicate:
-        lines.append("⚠️ Этот город уже выбран первым. Введите другой город.")
-    lines.append(f"📊 Первый город: {first_city}")
-    lines.append(COMPARE_CITY_2_PROMPT)
-    example = _comparison_example(first_city)
-    if example:
-        lines.append(f"Например: {example}.")
-    return "\n".join(lines)
 
 
 async def _prompt_for_second_city(

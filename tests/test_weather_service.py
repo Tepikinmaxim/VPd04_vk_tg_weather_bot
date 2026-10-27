@@ -2,7 +2,7 @@ import unittest
 from typing import Any
 
 from OpenWeatherAPI import OpenWeatherAPIError
-from weather_vk_bot.services.weather_service import WeatherService
+from weather_core.services.weather_service import WeatherService
 
 
 class FakeOpenWeatherAPI:

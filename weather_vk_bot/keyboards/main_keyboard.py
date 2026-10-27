@@ -4,14 +4,16 @@ from __future__ import annotations
 
 from vkbottle import Keyboard, KeyboardButtonColor, Location, Text
 
-BTN_WEATHER = "🌤 Погода сейчас"
-BTN_FORECAST = "📅 Прогноз 5 дней"
-BTN_COMPARE = "📊 Сравнить погоду"
-BTN_GEO = "📍 Геолокация"
-BTN_EXTENDED = "🌫 Расширенный режим"
-BTN_CHANGE_CITY = "🏙 Сменить город"
-BTN_HELP = "ℹ️ Помощь"
-BTN_MANUAL_COORDS = "✍️ Ввести координаты"
+from weather_core.buttons import (
+    BTN_CHANGE_CITY,
+    BTN_COMPARE,
+    BTN_EXTENDED,
+    BTN_FORECAST,
+    BTN_GEO,
+    BTN_HELP,
+    BTN_MANUAL_COORDS,
+    BTN_WEATHER,
+)
 
 
 def main_menu_keyboard() -> str:

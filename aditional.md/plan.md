@@ -20,6 +20,8 @@
   старых процессов и отчёт в `--check`.
 - [проверено] Автоопределение координат в сообщении и запуск сценария
   «Геолокация» без нажатия кнопки.
+- [проверено] Telegram-бот на aiogram с общим ядром `weather_core` и тем же
+  функционалом. Бот запущен, `--check` пройден.
 
 ## Дополнение 27.10.2026: правило очереди правок
 
@@ -1383,3 +1385,60 @@ OpenWeatherMap предоставил его в `local_names.ru`, вместо �
 - `git diff --check`
 - `.venv/bin/python main.py --check`
 - ручная проверка координат в VK после перезапуска.
+
+## Задача: Telegram-бот с функционалом VK
+
+**Статус:** реализовано и запущено 27.10.2026.
+
+### Цель
+
+Добавить Telegram-бота на aiogram с тем же функционалом, что у VK-бота,
+вынести общий нейтральный код в `weather_core/` и не изменить поведение VK/CLI.
+
+### Этапы
+
+1. [x] Создать `weather_core/` с текстами, кнопками, сравнением, координатами,
+   разбиением сообщений, форматтером и weather service.
+2. [x] Перевести VK-бот и тесты на `weather_core`; сохранить поведение.
+3. [x] Добавить `aiogram>=3.31,<4` и пакет `weather_tg_bot/`.
+4. [x] Реализовать состояния, reply-клавиатуры, long polling и диагностику
+   `--check`.
+5. [x] Реализовать handlers: `/start`, `/help`, `/cancel`, меню, погода,
+   прогноз, расширенный режим, сравнение, геолокация, смена города, fallback.
+6. [x] Добавить `telegram_main.py`, env `TELEGRAM_BOT_TOKEN`, README и тесты.
+7. [x] Живой запуск Telegram и `--check`; интерактивные сценарии остаются
+   за пользователем.
+
+### Результаты
+
+- Создан `weather_core/`; VK-бот использует общий форматтер, сервис, тексты,
+   кнопки, comparison и geo.
+- Создан `weather_tg_bot/` на aiogram 3: `Bot`, `Dispatcher`, `MemoryStorage`,
+  reply-клавиатуры, `request_location`, long polling и `--check`.
+- Сценарии Telegram повторяют VK: текущая погода, прогноз, расширенный режим,
+  сравнение с проверкой дублей, геопозиция и ручные координаты, смена города,
+  помощь, ошибки и разбиение сообщений.
+- Координаты в Telegram запускают геосценарий из любого состояния; пункт меню
+  «Геолокация» сохранён.
+- `telegram_main.py --check` проверяет `getMe`, вебхук и
+  `OPENWEATHER_API_KEY`.
+- В `.env.example` добавлен `TELEGRAM_BOT_TOKEN`; в `.env` добавлена пустая
+  переменная, пользователь заполнил её.
+- `Ran 208 tests in 8.462s — OK`; `compileall` и `git diff --check` без
+  ошибок.
+- VK-регрессия после выноса ядра: `Ran 183 tests — OK`.
+- После включения VPN доступ к `api.telegram.org` появился.
+- `telegram_main.py --check` прошёл: `@MaxWeatherExpertBot` (id 8857089728),
+  токен действителен, вебхук не установлен, ключ OpenWeatherMap задан.
+- Telegram-бот запущен в фоне: PID `21356`, polling активен.
+- Интерактивная проверка сценариев в Telegram остаётся за пользователем.
+
+### Проверки
+
+- `.venv/bin/python -m unittest discover -s tests -v`
+- `.venv/bin/python -m compileall -q weather_core weather_tg_bot weather_vk_bot tests`
+- `git diff --check`
+- `.venv/bin/python telegram_main.py --check`
+- `.venv/bin/python main.py --check`
+- после доступа к Telegram: `/start`, погода, прогноз, расширенный режим,
+  сравнение, гео, смена города, помощь.

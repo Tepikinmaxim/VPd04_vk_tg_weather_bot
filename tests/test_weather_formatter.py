@@ -1,7 +1,7 @@
 import unittest
 from typing import Any
 
-from weather_vk_bot.services.formatter import (
+from weather_core.services.formatter import (
     format_air_quality,
     format_comparison,
     format_current,

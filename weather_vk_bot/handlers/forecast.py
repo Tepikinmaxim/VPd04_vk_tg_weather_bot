@@ -5,7 +5,7 @@ from __future__ import annotations
 from vkbottle.bot import Bot, Message
 
 from weather_vk_bot.keyboards import main_menu_keyboard
-from weather_vk_bot.services.formatter import format_forecast, weather_city
+from weather_core.services.formatter import format_forecast, weather_city
 from weather_vk_bot.services.state_manager import BotState
 
 from .common import (

@@ -16,10 +16,10 @@ from vkbottle import AiohttpClient, API, BaseMiddleware, BuiltinStateDispenser, 
 from vkbottle.bot import Bot, Message
 from vkbottle.exception_factory import VKAPIError
 
+from weather_core.services.weather_service import WeatherService
 from weather_vk_bot.handlers import register_handlers
 from weather_vk_bot.handlers.common import HandlerDeps
 from weather_vk_bot.services.state_manager import StateManager
-from weather_vk_bot.services.weather_service import WeatherService
 from weather_vk_bot.services.welcome_gate import WelcomeGate
 
 LOGGER = logging.getLogger(__name__)

@@ -2,3 +2,4 @@ requests>=2.32,<3
 python-dotenv>=1.0,<2
 vkbottle>=4.11,<5
 certifi>=2024.2.2
+aiogram>=3.31,<4
