@@ -504,6 +504,6 @@
   меню, state-геолокация — после кнопок меню.
 - Добавлен Telegram-бот на aiogram 3 с тем же функционалом.
 - VK-регрессия: `Ran 183 tests — OK`; полный набор с Telegram:
-  `Ran 208 tests in 8.462s — OK`.
+  `Ran 208 tests in 27.231s — OK`.
 - После включения VPN Telegram-бот запущен: `@MaxWeatherExpertBot`,
   PID `21356`, polling активен; `--check` пройден.

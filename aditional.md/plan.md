@@ -1426,7 +1426,7 @@ OpenWeatherMap предоставил его в `local_names.ru`, вместо �
   `OPENWEATHER_API_KEY`.
 - В `.env.example` добавлен `TELEGRAM_BOT_TOKEN`; в `.env` добавлена пустая
   переменная, пользователь заполнил её.
-- `Ran 208 tests in 8.462s — OK`; `compileall` и `git diff --check` без
+- `Ran 208 tests in 27.231s — OK`; `compileall` и `git diff --check` без
   ошибок.
 - VK-регрессия после выноса ядра: `Ran 183 tests — OK`.
 - После включения VPN доступ к `api.telegram.org` появился.
@@ -1452,15 +1452,17 @@ OpenWeatherMap предоставил его в `local_names.ru`, вместо �
 ### Что изменено
 
 - Локальная папка переименована:
-  `VPd04_vk_weather` → `VPd04_vk_tg_weather_bot`.
+  `/Users/a123/Documents/ZeroCoding/VPd04_vk_weather` →
+  `/Users/a123/Documents/ZeroCoding/VPd04_vk_tg_weather_bot`.
 - GitHub-репозиторий переименован в `Tepikinmaxim/VPd04_vk_tg_weather_bot`;
-  local remote обновлён.
+  local remote обновлён, коммит `a033e4f` запушен.
 - Обновлены заголовок README, путь установки, структура проекта, заголовок
   `plan.md` и строка проекта в `TG_plan.md`.
 - Удалён устаревший неотслеживаемый дубль `weather_tg_bot/TG_plan.md`.
 - `.venv` пересоздан в новой папке, чтобы shebang и `pyvenv.cfg` не ссылались
   на старый путь.
-- Боты перезапущены из нового каталога; проверены тесты и GitHub.
+- Боты перезапущены из нового каталога: VK PID `25240`, Telegram PID `25241`.
+- Проверены тесты, GitHub и новые абсолютные пути в `.venv`.
 
 ### Проверки
 
